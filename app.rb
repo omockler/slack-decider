@@ -8,7 +8,7 @@ post '/choose' do
   items = items.split(",")
   {
     response_type:  "in_channel",
-    text: items.sample,
-    attachments: [{ "text": params["text"] }]
+    text: params["text"],
+    attachments: [{ "text": items.sample }]
   }.to_json
 end
