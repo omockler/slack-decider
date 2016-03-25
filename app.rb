@@ -2,6 +2,8 @@ require "sinatra"
 require "redis"
 require "json"
 
+COMMAND_PATTERN = /([^:]+):([\w]+)(.?)/
+
 configure do
   REDIS = if ENV["REDIS_URL"].nil?
             Redis.new
@@ -18,51 +20,80 @@ helpers do
     halt 403 unless ENV["TOKEN"] == params["token"]
   end
 
-  def team_lunch_key(team_id)
-    "team:#{team_id}:lunch"
+  def list_set_key(list = @list)
+    "list:#{list}"
+  end
+
+  def parse_command
+    text = unescape(params["text"])
+    match = COMMAND_PATTERN.match(text)
+    if match
+      @command, @list, @args = match.captures
+    else
+      @command = text.strip.downcase == "help" ? "help" : "default_pick"
+      @args = text
+    end
+    @args = @args.split(',').map(&:strip)
   end
 end
 
-get '/' do
+before do
+  pass if request.path_info == "/"
+  require_key!
+  halt 500 if params["text"].nil?
+  parse_command
+end
+
+set(:command) do |option|
+  condition do
+    @command == option
+  end
+end
+
+get '/?' do
   REDIS.set "test", "HI"
   REDIS.get "test"
 end
 
-post '/choose' do
-  require_key!
+post "/choose", command: "default_pick" do
   content_type :json
-  items = params["text"]
-  items = items.split(",")
   {
     response_type:  "in_channel",
-    text: params["text"],
-    attachments: [{ "text": items.sample }]
+    text: @args.join(", "),
+    attachments: [{ "text": @args.sample }]
   }.to_json
 end
 
-post "/add-lunch" do
-  require_key!
-  halt 500 unless params["text"] && params["test"] != ""
-  REDIS.sadd team_lunch_key(params["team_id"]), params["text"].downcase
-  "#{params["text"]} added to lunch list"
+post "/choose", command: "add" do
+  REDIS.sadd(list_set_key, @args.map(&:downcase))
+  "#{@args.join(", ")} added to #{@list} list"
 end
 
-post "/get-lunch" do
-  require_key!
+post "/choose", command: "list" do
   content_type :json
-  locations = REDIS.smembers team_lunch_key(params["team_id"])
+  items = REDIS.smembers(list_set_key)
   {
     response_type: "in_channel",
-    text: locations.join(" ,")
+    text: items.join(", ")
   }.to_json
 end
 
-post "/pick-lunch" do
-  require_key!
+post "/choose", command: "pick" do
   content_type :json
-  location = REDIS.srandmember team_lunch_key(params["team_id"])
+  location = REDIS.srandmember(list_set_key)
   {
     response_type: "in_channel",
     text: "You should go to #{location}"
+  }.to_json
+end
+
+post "/choose", command: "help" do
+  content_type :json
+  {
+    response_type: "ephemeral",
+    text: "Command Usage",
+    attachments: [{
+      text: "/decider option1, option2, option3\n /decider add:[list_name] option[, option]\n /decider list:[list_name]\n /decider pick:[list_name]"
+    }]
   }.to_json
 end
