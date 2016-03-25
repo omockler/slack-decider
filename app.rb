@@ -2,7 +2,7 @@ require "sinatra"
 require "redis"
 require "json"
 
-COMMAND_PATTERN = /([^:]+):([\w]+)(.?)/
+COMMAND_PATTERN = /([^:]+):([\w]+)(.*)/
 
 configure do
   REDIS = if ENV["REDIS_URL"].nil?
