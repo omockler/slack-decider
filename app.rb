@@ -83,7 +83,7 @@ post "/choose", command: "pick" do
   location = REDIS.srandmember(list_set_key)
   {
     response_type: "in_channel",
-    text: "You should go to #{location}"
+    text: location
   }.to_json
 end
 
