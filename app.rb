@@ -25,12 +25,12 @@ helpers do
   end
 
   def parse_command
-    text = unescape(params["text"])
+    text = unescape(params["text"]).strip
     match = COMMAND_PATTERN.match(text)
     if match
       @command, @list, @args = match.captures
     else
-      @command = text.strip.downcase == "help" ? "help" : "default_pick"
+      @command = ["help", "show"].include?(text.downcase) ? text.downcase : "default_pick"
       @args = text
     end
     @args = @args.split(',').map(&:strip)
@@ -97,3 +97,13 @@ post "/choose", command: "help" do
     }]
   }.to_json
 end
+
+post "/choose", command: "help" do
+  content_type :json
+  lists = REDIS.keys("list:*") # I know, I know. Should be scan but ¯\_(ツ)_/¯
+  {
+    response_type: "in_channel",
+    text: lists.join(", ")
+  }.to_json
+end
+
