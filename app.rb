@@ -98,7 +98,7 @@ post "/choose", command: "help" do
   }.to_json
 end
 
-post "/choose", command: "help" do
+post "/choose", command: "show" do
   content_type :json
   lists = REDIS.keys("list:*") # I know, I know. Should be scan but ¯\_(ツ)_/¯
   {
