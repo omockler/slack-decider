@@ -3,6 +3,15 @@ require "redis"
 require "json"
 
 COMMAND_PATTERN = /([^:]+):([\w]+)(.*)/
+HELP_TEXT = <<-EOS
+https://github.com/omockler/slack-decider
+Pick yes/no: `/decider`
+Pick from options: `/decider option1, option2, option3`
+List of lists: `/decider show'
+Add to list: `/decider add:[list_name] option[, option]`
+Show list options: `/decider list:[list_name]`
+Pick item from list: `/decider pick:[list_name]`
+EOS
 
 configure do
   REDIS = if ENV["REDIS_URL"].nil?
@@ -101,7 +110,7 @@ post "/choose", command: "help" do
     response_type: "ephemeral",
     text: "Command Usage",
     attachments: [{
-      text: "/decider option1, option2, option3\n /decider add:[list_name] option[, option]\n /decider list:[list_name]\n /decider pick:[list_name]"
+      text: HELP_TEXT
     }]
   }.to_json
 end
