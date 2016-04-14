@@ -27,8 +27,8 @@ helpers do
   def parse_command
     text = unescape(params["text"]).strip
     
-    case @command
-    when text.blank?
+    @command = case
+    when text.length == 0
       "yes_no"
     when ["help", "show"].include?(text.downcase)
       text.downcase
