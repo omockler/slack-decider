@@ -122,7 +122,6 @@ post "/choose", command: "yes_no" do
   content_type :json
   {
     response_type: "in_channel",
-    text: ["0", "1"].sample
+    text: ["yes", "no"].sample
   }.to_json
 end
-
