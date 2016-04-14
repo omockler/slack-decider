@@ -58,7 +58,6 @@ before do
   require_key!
   halt 500 if params["text"].nil?
   parse_command
-  split_args
 end
 
 set(:command) do |option|
