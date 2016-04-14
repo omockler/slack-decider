@@ -26,13 +26,20 @@ helpers do
 
   def parse_command
     text = unescape(params["text"]).strip
-    match = COMMAND_PATTERN.match(text)
-    if match
-      @command, @list, @args = match.captures
+    
+    case @command
+    when text.blank?
+      "yes_no"
+    when ["help", "show"].include?(text.downcase)
+      text.downcase
+    when match = COMMAND_PATTERN.match(text)
+      match.captures
     else
-      @command = ["help", "show"].include?(text.downcase) ? text.downcase : "default_pick"
-      @args = text
+      "default_pick"
     end
+
+    @command, @list, @args = @command if @command.is?(Array)
+    @args ||= text
     @args = @args.split(',').map(&:strip)
   end
 end
@@ -42,6 +49,7 @@ before do
   require_key!
   halt 500 if params["text"].nil?
   parse_command
+  split_args
 end
 
 set(:command) do |option|
@@ -104,6 +112,14 @@ post "/choose", command: "show" do
   {
     response_type: "in_channel",
     text: lists.join(", ")
+  }.to_json
+end
+
+post "/choose", command: "yes_no" do
+  content_type :json
+  {
+    response_type: "in_channel",
+    text: [0, 1].sample
   }.to_json
 end
 
