@@ -47,7 +47,7 @@ helpers do
       "default_pick"
     end
 
-    @command, @list, @args = @command if @command.is?(Array)
+    @command, @list, @args = @command if @command.is_a? Array
     @args ||= text
     @args = @args.split(',').map(&:strip)
   end
