@@ -5,12 +5,12 @@ require "json"
 COMMAND_PATTERN = /([^:]+):([\w]+)(.*)/
 HELP_TEXT = <<-EOS
 https://github.com/omockler/slack-decider
-Pick yes/no: `/decider`
-Pick from options: `/decider option1, option2, option3`
-List of lists: `/decider show'
-Add to list: `/decider add:[list_name] option[, option]`
-Show list options: `/decider list:[list_name]`
-Pick item from list: `/decider pick:[list_name]`
+Pick yes/no: /decider
+Pick from options: /decider option1, option2, option3
+List of lists: /decider show
+Add to list: /decider add:[list_name] option[, option]
+Show list options: /decider list:[list_name]
+Pick item from list: /decider pick:[list_name]
 EOS
 
 configure do
@@ -64,11 +64,6 @@ set(:command) do |option|
   condition do
     @command == option
   end
-end
-
-get '/?' do
-  REDIS.set "test", "HI"
-  REDIS.get "test"
 end
 
 post "/choose", command: "default_pick" do
