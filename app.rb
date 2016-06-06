@@ -131,14 +131,15 @@ end
 
 post '/choose', command: 'piname' do
   uri = URI.parse("http://piprojects.herokuapp.com/projects/random")
-  name = 3.times.map { Net::HTTP.get_response(uri) }.sample
-  project = JSON.parse(name.body)
+  projects = 3.times.map { Net::HTTP.get_response(uri) }.map { |name| JSON.parse(body.name) }
+  project = projects.sample
+  names = projects.map { |project| project['name'] }
   content_type :json
   {
     response_type: 'in_channel',
-    :text => project['name'],
+    :text => names.join(', '),
     :attachments => [{
-                      :text => project['color']["hex"],
+                      :text => "#{project['name']}\n#{project['color']["hex"]}",
                       :color => project['color']["hex"],
                       :title => project['animal']["wiki"],
                       :title_link => project['animal']["wiki"]
