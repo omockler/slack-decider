@@ -131,7 +131,7 @@ end
 
 post '/choose', command: 'piname' do
   uri = URI.parse("http://piprojects.herokuapp.com/projects/random")
-  projects = 3.times.map { Net::HTTP.get_response(uri) }.map { |name| JSON.parse(body) }
+  projects = 3.times.map { Net::HTTP.get_response(uri) }.map { |name| JSON.parse(name.body) }
   project = projects.sample
   names = projects.map { |p| p['name'] }
   content_type :json
