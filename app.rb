@@ -1,6 +1,6 @@
-require "sinatra"
-require "redis"
-require "json"
+require 'sinatra'
+require 'redis'
+require 'json'
 
 COMMAND_PATTERN = /([^:]+):([\w]+)(.*)/
 HELP_TEXT = <<-EOS
@@ -14,11 +14,11 @@ Pick item from list: /decider pick:[list_name]
 EOS
 
 configure do
-  REDIS = if ENV["REDIS_URL"].nil?
+  REDIS = if ENV['REDIS_URL'].nil?
             Redis.new
           else
-            uri = URI.parse(ENV["REDIS_URL"])
-            Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
+            uri = URI.parse(ENV['REDIS_URL'])
+            Redis.new(host: uri.host, port: uri.port, password: uri.password)
           end
 end
 
@@ -26,7 +26,7 @@ helpers do
   include Rack::Utils
 
   def require_key!
-    halt 403 unless ENV["TOKEN"] == params["token"]
+    halt 403 unless ENV['TOKEN'] == params['token']
   end
 
   def list_set_key(list = @list)
@@ -34,18 +34,18 @@ helpers do
   end
 
   def parse_command
-    text = unescape(params["text"]).strip
-    
+    text = unescape(params['text']).strip
+
     @command = case
-    when text.length == 0
-      "yes_no"
-    when ["help", "show"].include?(text.downcase)
-      text.downcase
-    when match = COMMAND_PATTERN.match(text)
-      match.captures
-    else
-      "default_pick"
-    end
+               when text.empty?
+                 'yes_no'
+               when ['help', 'show'].include?(text.downcase)
+                 text.downcase
+               when match = COMMAND_PATTERN.match(text)
+                 match.captures
+               else
+                 'default_pick'
+               end
 
     @command, @list, @args = @command if @command.is_a? Array
     @args ||= text
@@ -54,9 +54,9 @@ helpers do
 end
 
 before do
-  pass if request.path_info == "/"
+  pass if request.path_info == '/'
   require_key!
-  halt 500 if params["text"].nil?
+  halt 500 if params['text'].nil?
   parse_command
 end
 
@@ -66,62 +66,65 @@ set(:command) do |option|
   end
 end
 
-post "/choose", command: "default_pick" do
+post '/choose', command: 'default_pick' do
   content_type :json
   {
-    response_type:  "in_channel",
-    text: @args.join(", "),
-    attachments: [{ "text": @args.sample }]
+    response_type:  'in_channel',
+    text: @args.join(', '),
+    attachments: [{
+      text: @args.sample
+    }]
   }.to_json
 end
 
-post "/choose", command: "add" do
+post '/choose', command: 'add' do
   REDIS.sadd(list_set_key, @args.map(&:downcase))
-  "#{@args.join(", ")} added to #{@list} list"
+  "#{@args.join(', ')} added to #{@list} list"
 end
 
-post "/choose", command: "list" do
+post '/choose', command: 'list' do
   content_type :json
   items = REDIS.smembers(list_set_key)
   {
-    response_type: "in_channel",
-    text: items.join(", ")
+    response_type: 'in_channel',
+    text: items.join(', ')
   }.to_json
 end
 
-post "/choose", command: "pick" do
+post '/choose', command: 'pick' do
   content_type :json
   location = REDIS.srandmember(list_set_key)
   {
-    response_type: "in_channel",
+    response_type: 'in_channel',
     text: location
   }.to_json
 end
 
-post "/choose", command: "help" do
+post '/choose', command: 'help' do
   content_type :json
   {
-    response_type: "ephemeral",
-    text: "Command Usage",
+    response_type: 'ephemeral',
+    text: 'Command Usage',
     attachments: [{
       text: HELP_TEXT
     }]
   }.to_json
 end
 
-post "/choose", command: "show" do
+post '/choose', command: 'show' do
   content_type :json
-  lists = REDIS.keys("list:*") # I know, I know. Should be scan but ¯\_(ツ)_/¯
+  # I know, I know. Should be scan but ¯\_(ツ)_/¯
+  lists = REDIS.keys('list:*')
   {
-    response_type: "in_channel",
-    text: lists.join(", ")
+    response_type: 'in_channel',
+    text: lists.join(', ')
   }.to_json
 end
 
-post "/choose", command: "yes_no" do
+post '/choose', command: 'yes_no' do
   content_type :json
   {
-    response_type: "in_channel",
-    text: ["yes", "no"].sample
+    response_type: 'in_channel',
+    text: ['yes', 'no'].sample
   }.to_json
 end
