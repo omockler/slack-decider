@@ -39,7 +39,7 @@ helpers do
     @command = case
                when text.empty?
                  'yes_no'
-               when ['help', 'show'].include?(text.downcase)
+               when ['help', 'show', 'piname'].include?(text.downcase)
                  text.downcase
                when match = COMMAND_PATTERN.match(text)
                  match.captures
@@ -126,5 +126,22 @@ post '/choose', command: 'yes_no' do
   {
     response_type: 'in_channel',
     text: ['yes', 'no'].sample
+  }.to_json
+end
+
+post '/choose', command: 'piname' do
+  uri = URI.parse("http://piprojects.herokuapp.com/projects/random")
+  name = 3.times.map { Net::HTTP.get_response(uri) }.sample
+  project = JSON.body(name.body)
+  content_type :json
+  {
+    response_type: 'in_channel',
+    :text => project['name'],
+    :attachments => [{
+                      :text => project['color'].hex,
+                      :color => project['color'].hex,
+                      :title => project['animal'].wiki,
+                      :title_link => project['animal'].wiki
+                    }]
   }.to_json
 end
