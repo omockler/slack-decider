@@ -132,7 +132,7 @@ end
 post '/choose', command: 'piname' do
   uri = URI.parse("http://piprojects.herokuapp.com/projects/random")
   name = 3.times.map { Net::HTTP.get_response(uri) }.sample
-  project = JSON.body(name.body)
+  project = JSON.parse(name.body)
   content_type :json
   {
     response_type: 'in_channel',
