@@ -138,10 +138,10 @@ post '/choose', command: 'piname' do
     response_type: 'in_channel',
     :text => project['name'],
     :attachments => [{
-                      :text => project['color'].hex,
-                      :color => project['color'].hex,
-                      :title => project['animal'].wiki,
-                      :title_link => project['animal'].wiki
+                      :text => project['color']["hex"],
+                      :color => project['color']["hex"],
+                      :title => project['animal']["wiki"],
+                      :title_link => project['animal']["wiki"]
                     }]
   }.to_json
 end
