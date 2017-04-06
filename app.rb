@@ -26,7 +26,7 @@ helpers do
   include Rack::Utils
 
   def require_key!
-    halt 403 unless ENV['TOKEN'] == params['token']
+    halt 403 unless ENV['TOKEN'].split("|").include?(params['token'])
   end
 
   def list_set_key(list = @list)
