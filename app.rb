@@ -94,7 +94,7 @@ end
 post '/choose', command: 'pick' do
   content_type :json
   location = REDIS.srandmember(list_set_key)
-  location = 'List Missing' unless location
+  location = "List [#{@list}] Missing" unless location
   {
     response_type: 'in_channel',
     text: location
