@@ -119,7 +119,7 @@ post '/choose', command: 'show' do
   lists = REDIS.keys("list:#{@token}:*")
   {
     response_type: 'in_channel',
-    text: lists.join(', ')
+    text: lists.map { |l| l.split(/: */).last }.join(', ')
   }.to_json
 end
 
