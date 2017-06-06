@@ -26,11 +26,12 @@ helpers do
   include Rack::Utils
 
   def require_key!
-    halt 403 unless ENV['TOKEN'].split("|").include?(params['token'])
+    @token = params['token']
+    halt 403 unless ENV['TOKEN'].split("|").include?(@token)
   end
 
-  def list_set_key(list = @list)
-    "list:#{list}"
+  def list_set_key(list = @list, token = @token)
+    "list:#{token}:#{list}"
   end
 
   def parse_command
@@ -115,7 +116,7 @@ end
 post '/choose', command: 'show' do
   content_type :json
   # I know, I know. Should be scan but ¯\_(ツ)_/¯
-  lists = REDIS.keys('list:*')
+  lists = REDIS.keys("list:#{@token}:*")
   {
     response_type: 'in_channel',
     text: lists.join(', ')
