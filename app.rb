@@ -88,7 +88,7 @@ post '/choose', command: 'remove-item' do
   num_removed = REDIS.srem(list_set_key, @args.map(&:downcase))
   items = REDIS.smembers(list_set_key)
   {
-    response_type: 'in_channel',
+    response_type: 'ephemeral',
     text: "Removed #{num_removed} items.",
     attachments: [{
       text: items.join(', ')
