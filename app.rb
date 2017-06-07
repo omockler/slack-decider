@@ -83,6 +83,19 @@ post '/choose', command: 'add' do
   "#{@args.join(', ')} added to #{@list} list"
 end
 
+post '/choose', command: 'remove-item' do
+  content_type :json
+  num_removed = REDIS.srem(list_set_key, @args.map(&:downcase))
+  items = REDIS.smembers(list_set_key)
+  {
+    response_type: 'in_channel',
+    text: "Removed #{num_removed} items.",
+    attachments: [{
+      text: items.join(', ')
+    }]
+  }.to_json
+end
+
 post '/choose', command: 'list' do
   content_type :json
   items = REDIS.smembers(list_set_key)
