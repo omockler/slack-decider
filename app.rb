@@ -9,6 +9,7 @@ Pick yes/no: /decider
 Pick from options: /decider option1, option2, option3
 List of lists: /decider show
 Add to list: /decider add:[list_name] option[, option]
+Remove list item: /decider remove-item:[list_name] option[, option]
 Show list options: /decider list:[list_name]
 Pick item from list: /decider pick:[list_name]
 EOS
@@ -91,7 +92,7 @@ post '/choose', command: 'remove-item' do
     response_type: 'ephemeral',
     text: "Removed #{num_removed} items.",
     attachments: [{
-      text: items.join(', ')
+      text: "List now contains: #{items.join(', ')}"
     }]
   }.to_json
 end
