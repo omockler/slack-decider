@@ -162,3 +162,12 @@ post '/choose', command: 'piname' do
                     }]
   }.to_json
 end
+
+post '/choose', command: 'shuffle' do
+  content_type :json
+  items = REDIS.smembers(list_set_key)
+  {
+    response_type: 'in_channel',
+    text: items.shuffle.join(', ')
+  }.to_json
+end
