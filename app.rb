@@ -12,6 +12,7 @@ Add to list: /decider add:[list_name] option[, option]
 Remove list item: /decider remove-item:[list_name] option[, option]
 Show list options: /decider list:[list_name]
 Pick item from list: /decider pick:[list_name]
+Show randomized list options: /decider shuffle:[list_name]
 EOS
 
 configure do
